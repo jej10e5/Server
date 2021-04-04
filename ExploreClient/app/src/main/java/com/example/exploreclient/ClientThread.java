@@ -24,8 +24,14 @@ public class ClientThread extends Thread {
             sock = new Socket(mServAddr, 9000);
             doPrintln(">> 서버와 연결 성공!");
             RecvThread recvThread = new RecvThread(sock.getInputStream());
+            SendThread sendThread = new SendThread(sock.getOutputStream());
+
             recvThread.start();
+            sendThread.start();
+
             recvThread.join();
+            sendThread.join();
+
         } catch (Exception e) {
             doPrintln(e.getMessage());
         } finally {

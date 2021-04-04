@@ -6,32 +6,21 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
-import android.media.Image;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.preference.PreferenceManager;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.google.android.gms.maps.CameraUpdateFactory;
-import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.OnMapReadyCallback;
-import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.Marker;
-import com.google.android.gms.maps.model.MarkerOptions;
 
-
-
-import static com.example.exploreclient.ClientThread.mMainHandler;
-
-public class MainActivity extends AppCompatActivity implements OnMapReadyCallback {
+public class MainActivity extends AppCompatActivity {
 
     public static final int CMD_APPEND_TEXT = 0;
     public static final int CMD_ENABLE_CONNECT_BUTTON = 1;
@@ -43,34 +32,97 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     private EditText mEditIP;
     private Button mBtnConnect;
     private ClientThread mClientThread;
+    private SendThread mSendThread;
 
-    private GoogleMap mMap;
-    private Marker mMarker;
-
+    Button mBtnRight;
+    Button mBtnLeft;
+    Button mBtnUp;
+    Button mBtnDown;
+    Button mBtnStop;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        mImageFrame=(ImageView)findViewById(R.id.imageFrame);
-        mTextStatus=(TextView)findViewById(R.id.textStatus);
-        mEditIP=(EditText)findViewById(R.id.editIP);
-        mBtnConnect=(Button)findViewById(R.id.btnConnect);
+        mImageFrame = (ImageView) findViewById(R.id.imageFrame);
+        mTextStatus = (TextView) findViewById(R.id.textStatus);
+        mEditIP = (EditText) findViewById(R.id.editIP);
+        mBtnConnect = (Button) findViewById(R.id.btnConnect);
 
-        SharedPreferences prefs= PreferenceManager.getDefaultSharedPreferences(this);
-        boolean auto_connect=prefs.getBoolean("pref_autoconnect",false);
-        String default_ip=prefs.getString("pref_defaultip","127.0.0.1");
+        mBtnUp = (Button) findViewById(R.id.btnUp);
+        mBtnRight = (Button) findViewById(R.id.btnRight);
+        mBtnDown = (Button) findViewById(R.id.btnDown);
+        mBtnLeft = (Button) findViewById(R.id.btnLeft);
+        mBtnStop = (Button) findViewById(R.id.btnStop);
+
+
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        boolean auto_connect = prefs.getBoolean("pref_autoconnect", false);
+        String default_ip = prefs.getString("pref_defaultip", "127.0.0.1");
         mEditIP.setText(default_ip);
-        if(auto_connect)
+        if (auto_connect)
             mOnClick(mBtnConnect);
 
-        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
-                .findFragmentById(map);
-        mapFragment.getMapAsync(this);
+        mBtnUp.setOnTouchListener(new RepeatListener(3000,1, new View.OnClickListener(){
+            @Override
+            public void onClick(View view) {
+                if (SendThread.mHandler != null) {
+                    Message msg = Message.obtain();
+                    msg.what = SendThread.CMD_GOBUTTON;
+                    msg.obj = "F";
+                    SendThread.mHandler.sendMessage(msg);
+                }
+            }
+        }));
 
+        mBtnDown.setOnTouchListener(new RepeatListener(3000,1, new View.OnClickListener(){
+            @Override
+            public void onClick(View view) {
+                if (SendThread.mHandler != null) {
+                    Message msg = Message.obtain();
+                    msg.what = SendThread.CMD_BACKBUTTON;
+                    msg.obj = "B";
+                    SendThread.mHandler.sendMessage(msg);
+                }
+            }
+        }));
+        mBtnRight.setOnTouchListener(new RepeatListener(3000,1, new View.OnClickListener(){
+            @Override
+            public void onClick(View view) {
+                if (SendThread.mHandler != null) {
+                    Message msg = Message.obtain();
+                    msg.what = SendThread.CMD_RIGHTBUTTON;
+                    msg.obj = "R";
+                    SendThread.mHandler.sendMessage(msg);
+                }
+            }
+        }));
+        mBtnLeft.setOnTouchListener(new RepeatListener(3000,1, new View.OnClickListener(){
+            @Override
+            public void onClick(View view) {
+                if (SendThread.mHandler != null) {
+                    Message msg = Message.obtain();
+                    msg.what = SendThread.CMD_LEFTBUTTON;
+                    msg.obj = "L";
+                    SendThread.mHandler.sendMessage(msg);
+                }
+            }
+        }));
+
+        mBtnStop.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                int status = event.getAction();
+                Message msg = Message.obtain();
+                msg.what = 1;
+                msg.obj = "S";
+                SendThread.mHandler.sendMessage(msg);
+                return false;
+
+            }
+        });
     }
-
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_main,menu);
@@ -110,6 +162,10 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
     }
 
+
+
+
+
     private Handler mMainHandler = new Handler() {
 
         @Override
@@ -126,21 +182,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                     Bitmap bitmap = (Bitmap) msg.obj;
                     mImageFrame.setImageBitmap(bitmap);
                     break;
-                case CMD_SHOW_MAP: // 위치 출력
-                    if (mMap == null) return;
-                    LatLng latlng = (LatLng) msg.obj;
-                    if (mMarker != null) mMarker.remove();
-                    mMarker = mMap.addMarker(new MarkerOptions().position(latlng));
-                    mMap.moveCamera(CameraUpdateFactory.newLatLng(latlng));
-                    break;
             }
         }
     };
 
-    @Override
-    public void onMapReady(GoogleMap googleMap) {
-        mMap = googleMap;
-        mMap.animateCamera(CameraUpdateFactory.zoomTo(13));
-        mMap.getUiSettings().setZoomControlsEnabled(true);
-    }
 }

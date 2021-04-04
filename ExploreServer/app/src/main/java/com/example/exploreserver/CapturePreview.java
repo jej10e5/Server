@@ -22,23 +22,25 @@ import java.util.Optional;
 @SuppressWarnings("deprecation")
 public class CapturePreview  implements SurfaceHolder.Callback, Camera.PreviewCallback{
     private Activity mActivity;
-    private ImageView mImageView;
 
-    private android.hardware.Camera mCamera;
+    private Camera mCamera;
     private int mCameraId=0; //후면카메라
     private int mCount;
 
-    public CapturePreview(Activity activity, SurfaceView surfaceView, ImageView imageView){
+    public CapturePreview(Activity activity, SurfaceView surfaceView){
         mActivity=activity;
         SurfaceHolder surfaceHodlder=surfaceView.getHolder();
         surfaceHodlder.addCallback(this);
-        mImageView=imageView;
     }
 
     @Override
     public void surfaceCreated(@NonNull SurfaceHolder holder) {
         try {
-            mCamera.open(mCameraId);
+            mCamera=Camera.open(mCameraId);
+            //오토포커스 설정
+            Camera.Parameters params=mCamera.getParameters();
+            params.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE);
+            mCamera.setParameters(params);
             setCameraDisplayOrientation(mCamera);
             mCamera.setPreviewDisplay(holder);
             mCamera.setPreviewCallback(this);
@@ -53,6 +55,7 @@ public class CapturePreview  implements SurfaceHolder.Callback, Camera.PreviewCa
         try{
             mCamera.stopPreview();
             mCamera.setPreviewDisplay(holder);
+            mCamera.setPreviewCallback(this);
             mCamera.startPreview();
         }catch (Exception e){
             e.printStackTrace();
@@ -100,7 +103,7 @@ public class CapturePreview  implements SurfaceHolder.Callback, Camera.PreviewCa
 
     @Override
     public void onPreviewFrame(byte[] data, Camera camera) {
-        if(++mCount==10){
+        if(++mCount==1){
             mCount=0;
 
             Camera.Parameters parameters=camera.getParameters();
@@ -113,7 +116,6 @@ public class CapturePreview  implements SurfaceHolder.Callback, Camera.PreviewCa
             Rect rect=new Rect(0,0,width,height);
             Bitmap bitmap=rotateBitmap(image,orientation,rect);
 
-            mImageView.setImageBitmap(bitmap);
             sendBitmapThroughNetwork(bitmap);
         }
     }

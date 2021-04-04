@@ -1,4 +1,4 @@
-package com.example.exploreserver;
+package com.example.projectserver;
 
 import android.graphics.Bitmap;
 import android.os.Handler;
@@ -10,17 +10,15 @@ import java.io.DataOutputStream;
 import java.io.OutputStream;
 
 public class SendThread extends Thread {
+
     public static final int CMD_SEND_BITMAP = 1;
-    public static final int CMD_SEND_LOCATION = 2;
 
     private static final int HEADER_BITMAP = 0x11111111;
-    private static final int HEADER_LOCATION = 0x22222222;
 
     private DataOutputStream mDataOutputStream;
     public static Handler mHandler;
 
     public SendThread(OutputStream os) {
-
         mDataOutputStream = new DataOutputStream(os);
     }
 
@@ -42,15 +40,6 @@ public class SendThread extends Thread {
                             mDataOutputStream.writeInt(HEADER_BITMAP);
                             mDataOutputStream.writeInt(byteArray.length);
                             mDataOutputStream.write(byteArray);
-                            mDataOutputStream.flush();
-                            break;
-                        case CMD_SEND_LOCATION: // 위치 전송
-                            DeviceLocation loc = (DeviceLocation) msg.obj;
-                            // 헤더 + 길이 + 데이터 순으로 보낸다.
-                            mDataOutputStream.writeInt(HEADER_LOCATION);
-                            mDataOutputStream.writeInt(8 * 2); // 길이
-                            mDataOutputStream.writeDouble(loc.mLatitude);
-                            mDataOutputStream.writeDouble(loc.mLongitude);
                             mDataOutputStream.flush();
                             break;
                     }

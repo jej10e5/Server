@@ -52,7 +52,6 @@ public class RepeatListener implements View.OnTouchListener {
 
             case MotionEvent.ACTION_CANCEL:
                 handler.removeCallbacks(handlerRunnable);
-
                 downView = null;
                 break;
 

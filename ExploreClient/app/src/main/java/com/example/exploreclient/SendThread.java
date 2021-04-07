@@ -13,7 +13,7 @@ import java.io.OutputStream;
 
 public class SendThread extends Thread {
 
-    public static final int CMD_GOBUTTON = 4;
+    public static final int CMD_FOWARDBUTTON = 4;
     public static final int CMD_BACKBUTTON = 5;
     public static final int CMD_RIGHTBUTTON = 6;
     public static final int CMD_LEFTBUTTON = 7;
@@ -41,7 +41,7 @@ public class SendThread extends Thread {
                 byte[] byteArray;
                 try {
                     switch (msg.what) {
-                        case CMD_GOBUTTON:
+                        case CMD_FOWARDBUTTON:
                             String go = (String) msg.obj;
                             mDataOutputStream.writeInt(HEADER_GO);
                             mDataOutputStream.writeInt(go.length());

@@ -4,6 +4,7 @@ package com.example.exploreclient;
 import android.os.Handler;
 import android.os.Message;
 
+import java.net.DatagramSocket;
 import java.net.Socket;
 
 
@@ -22,15 +23,19 @@ public class ClientThread extends Thread {
         Socket sock = null;
         try {
             sock = new Socket(mServAddr, 9000);
+            DatagramSocket datagramSocket=new DatagramSocket(50006); //서버와 음성 통화를 위한 UDP소켓 설정
             doPrintln(">> 서버와 연결 성공!");
             RecvThread recvThread = new RecvThread(sock.getInputStream());
             SendThread sendThread = new SendThread(sock.getOutputStream());
+            VoiceRecv voiceRecv=new VoiceRecv(datagramSocket);
 
             recvThread.start();
             sendThread.start();
+            voiceRecv.start();
 
             recvThread.join();
             sendThread.join();
+            voiceRecv.join();
 
         } catch (Exception e) {
             doPrintln(e.getMessage());

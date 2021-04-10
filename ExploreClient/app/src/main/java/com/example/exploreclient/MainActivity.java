@@ -40,6 +40,10 @@ public class MainActivity extends AppCompatActivity {
     Button mBtnBackward;
     Button mBtnStop;
 
+    Button mBtnVoiceStart;
+    Button mBtnVoiceQuit;
+    private VoiceSend mic;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -50,11 +54,14 @@ public class MainActivity extends AppCompatActivity {
         mEditIP = (EditText) findViewById(R.id.editIP);
         mBtnConnect = (Button) findViewById(R.id.btnConnect);
 
-        mBtnForward = (Button) findViewById(R.id.btnUp);
+        mBtnForward = (Button) findViewById(R.id.btnForward);
         mBtnRight = (Button) findViewById(R.id.btnRight);
-        mBtnBackward = (Button) findViewById(R.id.btnDown);
+        mBtnBackward = (Button) findViewById(R.id.btnBackward);
         mBtnLeft = (Button) findViewById(R.id.btnLeft);
         mBtnStop = (Button) findViewById(R.id.btnStop);
+
+        mBtnVoiceStart=(Button)findViewById(R.id.btnVoiceStart);
+        mBtnVoiceQuit=(Button)findViewById(R.id.btnVoiceQuit);
 
 
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
@@ -64,91 +71,51 @@ public class MainActivity extends AppCompatActivity {
         if (auto_connect)
             mOnClick(mBtnConnect);
 
-        mBtnForward.setOnTouchListener(new View.OnTouchListener() {
+        (mBtnForward).setOnTouchListener(new RepeatListener(3000,1, new View.OnClickListener(){
             @Override
-            public boolean onTouch(View v, MotionEvent motionEvent) {
+            public void onClick(View view) {
                 if (SendThread.mHandler != null) {
                     Message msg = Message.obtain();
-                    switch (motionEvent.getAction()) {
-                        case MotionEvent.ACTION_DOWN:
-                            msg.what = SendThread.CMD_FOWARDBUTTON;
-                            msg.obj = "F";
-                            SendThread.mHandler.sendMessage(msg);
-                            break;
-                        case MotionEvent.ACTION_UP:
-                            msg.what = SendThread.CMD_STOP;
-                            msg.obj = "S";
-                            SendThread.mHandler.sendMessage(msg);
-                            break;
-                    }
+                    msg.what = SendThread.CMD_FOWARDBUTTON;
+                    msg.obj = "F";
+                    SendThread.mHandler.sendMessage(msg);
                 }
-                return false;
             }
-        });
+        }));
 
-        mBtnBackward.setOnTouchListener(new View.OnTouchListener() {
+        (mBtnBackward).setOnTouchListener(new RepeatListener(3000,1, new View.OnClickListener(){
             @Override
-            public boolean onTouch(View v, MotionEvent motionEvent) {
+            public void onClick(View view) {
                 if (SendThread.mHandler != null) {
                     Message msg = Message.obtain();
-                    switch (motionEvent.getAction()) {
-                        case MotionEvent.ACTION_DOWN:
-                            msg.what = SendThread.CMD_BACKBUTTON;
-                            msg.obj = "B";
-                            SendThread.mHandler.sendMessage(msg);
-                            break;
-                        case MotionEvent.ACTION_UP:
-                            msg.what = SendThread.CMD_STOP;
-                            msg.obj = "S";
-                            SendThread.mHandler.sendMessage(msg);
-                            break;
-                    }
+                    msg.what = SendThread.CMD_BACKBUTTON;
+                    msg.obj = "B";
+                    SendThread.mHandler.sendMessage(msg);
                 }
-                return false;
             }
-        });
-        mBtnRight.setOnTouchListener(new View.OnTouchListener() {
+        }));
+        (mBtnRight).setOnTouchListener(new RepeatListener(3000,1, new View.OnClickListener(){
             @Override
-            public boolean onTouch(View v, MotionEvent motionEvent) {
+            public void onClick(View view) {
                 if (SendThread.mHandler != null) {
                     Message msg = Message.obtain();
-                    switch (motionEvent.getAction()) {
-                        case MotionEvent.ACTION_DOWN:
-                            msg.what = SendThread.CMD_RIGHTBUTTON;
-                            msg.obj = "R";
-                            SendThread.mHandler.sendMessage(msg);
-                            break;
-                        case MotionEvent.ACTION_UP:
-                            msg.what = SendThread.CMD_STOP;
-                            msg.obj = "S";
-                            SendThread.mHandler.sendMessage(msg);
-                            break;
-                    }
+                    msg.what = SendThread.CMD_RIGHTBUTTON;
+                    msg.obj = "R";
+                    SendThread.mHandler.sendMessage(msg);
                 }
-                return false;
             }
-        });
-        mBtnLeft.setOnTouchListener(new View.OnTouchListener() {
+        }));
+        (mBtnLeft).setOnTouchListener(new RepeatListener(3000,1, new View.OnClickListener(){
             @Override
-            public boolean onTouch(View v, MotionEvent motionEvent) {
+            public void onClick(View view) {
                 if (SendThread.mHandler != null) {
                     Message msg = Message.obtain();
-                    switch (motionEvent.getAction()) {
-                        case MotionEvent.ACTION_DOWN:
-                            msg.what = SendThread.CMD_LEFTBUTTON;
-                            msg.obj = "L";
-                            SendThread.mHandler.sendMessage(msg);
-                            break;
-                        case MotionEvent.ACTION_UP:
-                            msg.what = SendThread.CMD_STOP;
-                            msg.obj = "S";
-                            SendThread.mHandler.sendMessage(msg);
-                            break;
-                    }
+                    msg.what = SendThread.CMD_LEFTBUTTON;
+                    msg.obj = "L";
+                    SendThread.mHandler.sendMessage(msg);
                 }
-                return false;
             }
-        });
+        }));
 
         mBtnStop.setOnTouchListener(new View.OnTouchListener() {
             @Override
@@ -200,6 +167,31 @@ public class MainActivity extends AppCompatActivity {
                 break;
             case R.id.btnQuit:
                 finish();
+                break;
+            case R.id.btnVoiceStart:
+                if(mic != null)
+                    break;
+                else{
+                    String address2=mEditIP.getText().toString();
+                    mic=new VoiceSend(address2);
+                    mic.start();
+                    if(SendThread.mHandler!=null){
+                        Message msg=Message.obtain();
+                        msg.what=SendThread.CMD_VOICESTART;
+                        msg.obj=address2;
+                        SendThread.mHandler.sendMessage(msg);
+                    }
+                }
+                break;
+            case R.id.btnVoiceQuit:
+                if(mic != null){
+                    mic.interrupt();
+                    mic=null;
+                    Message msg=Message.obtain();
+                    msg.what=SendThread.CMD_VOICEQUIT;
+                    msg.obj="end";
+                    SendThread.mHandler.sendMessage(msg);
+                }
                 break;
         }
     }

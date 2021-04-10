@@ -18,12 +18,16 @@ public class SendThread extends Thread {
     public static final int CMD_RIGHTBUTTON = 6;
     public static final int CMD_LEFTBUTTON = 7;
     public static final int CMD_STOP = 8;
+    public static final int CMD_VOICESTART=11;
+    public static final int CMD_VOICEQUIT=12;
 
     public static final int HEADER_GO = 0x11111111;
     public static final int HEADER_BACK = 0X22222222;
     public static final int HEADER_RIGHT = 0x33333333;
     public static final int HEADER_LEFT = 0X44444444;
     public static final int HEADER_STOP = 0x55555555;
+    public static final int HEADER_VOICESTART = 0x66666666;
+    public static final int HEADER_VOICEQUIT=0x77777777;
 
     public static Handler mHandler;
     private DataOutputStream mDataOutputStream;
@@ -42,10 +46,10 @@ public class SendThread extends Thread {
                 try {
                     switch (msg.what) {
                         case CMD_FOWARDBUTTON:
-                            String go = (String) msg.obj;
+                            String forward = (String) msg.obj;
                             mDataOutputStream.writeInt(HEADER_GO);
-                            mDataOutputStream.writeInt(go.length());
-                            mDataOutputStream.writeUTF(go);
+                            mDataOutputStream.writeInt(forward.length());
+                            mDataOutputStream.writeUTF(forward);
                             mDataOutputStream.flush();
                             break;
                         case CMD_BACKBUTTON:
@@ -75,6 +79,20 @@ public class SendThread extends Thread {
                             mDataOutputStream.writeInt(HEADER_STOP);
                             mDataOutputStream.writeInt(stop.length());
                             mDataOutputStream.writeUTF(stop);
+                            mDataOutputStream.flush();
+                            break;
+                        case CMD_VOICESTART:
+                            String voicestart=(String) msg.obj;
+                            mDataOutputStream.writeInt(HEADER_VOICESTART);
+                            mDataOutputStream.writeInt(voicestart.length());
+                            mDataOutputStream.writeUTF(voicestart);
+                            mDataOutputStream.flush();
+                            break;
+                        case CMD_VOICEQUIT:
+                            String voicequit=(String) msg.obj;
+                            mDataOutputStream.writeInt(HEADER_VOICEQUIT);
+                            mDataOutputStream.writeInt(voicequit.length());
+                            mDataOutputStream.writeUTF(voicequit);
                             mDataOutputStream.flush();
                             break;
                     }

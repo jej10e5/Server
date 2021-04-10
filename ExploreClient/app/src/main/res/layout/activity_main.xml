@@ -36,13 +36,13 @@
         android:layout_weight="1">
 
         <Button
-            android:id="@+id/btnUp"
+            android:id="@+id/btnForward"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             app:layout_constraintRight_toRightOf="parent"
-            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintLeft_toRightOf="@+id/btnSpeech"
             app:layout_constraintTop_toTopOf="parent"
-            android:text="위"/>
+            android:text="앞"/>
 
         <Button
             android:id="@+id/btnRight"
@@ -50,23 +50,23 @@
             android:layout_height="wrap_content"
             app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintLeft_toRightOf="@id/btnStop"
-            app:layout_constraintTop_toBottomOf="@id/btnUp"
+            app:layout_constraintTop_toBottomOf="@id/btnForward"
             android:text="오른쪽" />
 
         <Button
-            android:id="@+id/btnDown"
+            android:id="@+id/btnBackward"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             app:layout_constraintStart_toStartOf="@id/btnStop"
             app:layout_constraintTop_toBottomOf="@id/btnStop"
-            android:text="아래"/>
+            android:text="뒤"/>
         <Button
             android:id="@+id/btnLeft"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintLeft_toRightOf="@+id/btnSpeech"
             app:layout_constraintRight_toLeftOf="@id/btnStop"
-            app:layout_constraintTop_toBottomOf="@id/btnUp"
+            app:layout_constraintTop_toBottomOf="@id/btnForward"
             android:text="왼쪽"/>
         <Button
             android:id="@+id/btnStop"
@@ -74,8 +74,43 @@
             android:layout_height="wrap_content"
             app:layout_constraintLeft_toRightOf="@id/btnLeft"
             app:layout_constraintRight_toLeftOf="@id/btnRight"
-            app:layout_constraintTop_toBottomOf="@id/btnUp"
+            app:layout_constraintTop_toBottomOf="@id/btnForward"
             android:text="정지"/>
+
+        <Button
+            android:id="@+id/btnSpeech"
+            android:layout_marginLeft="10dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            android:text="음성인식"/>
+        <Button
+            android:id="@+id/btnPicture"
+            android:layout_marginLeft="10dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/btnSpeech"
+            android:text="사진촬영"/>
+        <Button
+            android:id="@+id/btnVoiceStart"
+            android:layout_marginLeft="10dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/btnPicture"
+            android:onClick="mOnClick"
+            android:text="통화"/>
+        <Button
+            android:id="@+id/btnVoiceQuit"
+            android:layout_marginLeft="10dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/btnVoiceStart"
+            android:onClick="mOnClick"
+            android:text="통화종료"/>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
     <LinearLayout

@@ -165,9 +165,6 @@ public class MainActivity extends AppCompatActivity {
                 mClientThread.start();
                 mBtnConnect.setEnabled(false);
                 break;
-            case R.id.btnQuit:
-                finish();
-                break;
             case R.id.btnVoiceStart:
                 if(mic != null)
                     break;
@@ -181,6 +178,7 @@ public class MainActivity extends AppCompatActivity {
                         msg.obj=address2;
                         SendThread.mHandler.sendMessage(msg);
                     }
+                    mBtnVoiceStart.setEnabled(false);
                 }
                 break;
             case R.id.btnVoiceQuit:
@@ -192,6 +190,10 @@ public class MainActivity extends AppCompatActivity {
                     msg.obj="end";
                     SendThread.mHandler.sendMessage(msg);
                 }
+                mBtnVoiceStart.setEnabled(true);
+                break;
+            case R.id.btnQuit:
+                finish();
                 break;
         }
     }

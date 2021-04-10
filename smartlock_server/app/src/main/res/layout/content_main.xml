@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    app:layout_behavior="@string/appbar_scrolling_view_behavior"
+    tools:context=".MainActivity"
+    tools:showIn="@layout/activity_main">
+
+    <FrameLayout
+        android:id="@+id/container"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+    <Button
+        android:layout_width="110dp"
+        android:onClick="mOnClick"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:id="@+id/btnQuit"
+        android:text="종료"/>
+    <Button
+        android:layout_width="110dp"
+        android:onClick="mOnClick"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:layout_below="@+id/btnQuit"
+        android:id="@+id/btnAccept"
+        android:text="연결"/>
+    <Button
+        android:layout_width="110dp"
+        android:onClick="mOnClick"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:layout_below="@+id/btnAccept"
+        android:id="@+id/btnCall"
+        android:text="통화 연결"/>
+    <Button
+        android:onClick="mOnClick"
+        android:layout_width="110dp"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:layout_below="@+id/btnCall"
+        android:id="@+id/btnEndCall"
+        android:text="통화 종료"/>
+    <Button
+        android:onClick="mOnClick"
+        android:layout_width="110dp"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:layout_below="@+id/btnEndCall"
+        android:id="@+id/btnBuleToothOn"
+        android:text="BT 연결"/>
+    <Button
+        android:onClick="mOnClick"
+        android:layout_width="110dp"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:layout_below="@+id/btnBuleToothOn"
+        android:id="@+id/btnBuleToothOff"
+        android:text="BT 종료"/>
+    <Button
+        android:onClick="mOnClick"
+        android:layout_width="110dp"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:layout_below="@+id/btnBuleToothOff"
+        android:id="@+id/btnVoice"
+        android:text="음성"/>
+    <Button
+        android:onClick="mOnClick"
+        android:layout_width="110dp"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:layout_below="@+id/btnVoice"
+        android:id="@+id/btnOpen"
+        android:text="도어락 열기"/>
+</RelativeLayout>

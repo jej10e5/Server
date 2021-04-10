@@ -17,7 +17,7 @@ public class VoiceSend extends Thread{
     private static final int SAMPLE_SIZE = 2; // Bytes
     private static final int BUF_SIZE = SAMPLE_INTERVAL * SAMPLE_INTERVAL * SAMPLE_SIZE * 2; //Bytes
     String ip;
-    private int port = 50005; // Port the packets are addressed to
+    private int port = 50001; // Port the packets are addressed to
     private boolean mic = false; // Enable mic?
 
     public VoiceSend(String ip){

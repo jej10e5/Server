@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".MainActivity">
+        <ImageView
+            android:id="@+id/imageFrame"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scaleType="fitXY" />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_alignBottom="@+id/imageFrame">
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+                <RelativeLayout
+                    android:layout_width="200dp"
+                    android:layout_height="200dp"
+                    android:layout_weight="0.5"
+                    android:layout_alignParentLeft="true">
+
+                    <Button
+                        android:id="@+id/btnW"
+                        android:layout_width="70dp"
+                        android:layout_height="50dp"
+                        android:layout_alignParentTop="true"
+                        android:layout_centerHorizontal="true"
+                        android:alpha="0.2"
+                        android:text="W" />
+
+                    <Button
+                        android:id="@+id/btnA"
+                        android:layout_width="70dp"
+                        android:layout_height="50dp"
+                        android:layout_alignParentLeft="true"
+                        android:layout_centerVertical="true"
+                        android:alpha="0.2"
+                        android:onClick="mOnClick"
+                        android:text="A" />
+
+                    <Button
+                        android:id="@+id/btnD"
+                        android:layout_width="70dp"
+                        android:layout_height="50dp"
+                        android:layout_alignParentRight="true"
+                        android:layout_centerVertical="true"
+                        android:alpha="0.2"
+                        android:onClick="mOnClick"
+                        android:text="D" />
+
+                    <Button
+                        android:id="@+id/btnS"
+                        android:layout_width="70dp"
+                        android:layout_height="50dp"
+                        android:layout_alignParentBottom="true"
+                        android:layout_centerHorizontal="true"
+                        android:alpha="0.2"
+                        android:onClick="mOnClick"
+                        android:text="S" />
+                </RelativeLayout>
+
+                <RelativeLayout
+                    android:layout_width="200dp"
+                    android:layout_height="200dp"
+                    android:layout_weight="0.5"
+                    android:layout_alignParentRight="true">
+                    <Button
+                        android:layout_height="50dp"
+                        android:layout_width="70dp"
+                        android:text="T"
+                        android:id="@+id/btnT"
+                        android:alpha="0.2"
+                        android:layout_centerHorizontal="true"
+                        android:layout_alignParentTop="true"/>
+                    <Button
+                        android:layout_height="50dp"
+                        android:layout_width="70dp"
+                        android:text="F"
+                        android:id="@+id/btnF"
+                        android:onClick="mOnClick"
+                        android:alpha="0.2"
+                        android:layout_centerVertical="true"
+                        android:layout_alignParentLeft="true"/>
+                    <Button
+                        android:layout_height="50dp"
+                        android:layout_width="70dp"
+                        android:text="H"
+                        android:onClick="mOnClick"
+                        android:id="@+id/btnH"
+                        android:alpha="0.2"
+                        android:layout_centerVertical="true"
+                        android:layout_alignParentRight="true"/>
+                    <Button
+                        android:layout_height="50dp"
+                        android:layout_width="70dp"
+                        android:text="G"
+                        android:onClick="mOnClick"
+                        android:id="@+id/btnG"
+                        android:alpha="0.2"
+                        android:layout_centerHorizontal="true"
+                        android:layout_alignParentBottom="true"/>
+                </RelativeLayout>
+            </RelativeLayout>
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1">
+            </LinearLayout>
+            <LinearLayout
+                android:id="@+id/bottom"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1">
+                <EditText
+                    android:id="@+id/editIP"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="2"
+                    android:digits="0123456789."
+                    android:hint="서버 IP 주소"
+                    android:inputType="number"/>
+                <Button
+                    android:id="@+id/btnOpen"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:onClick="mOnClick"
+                    android:alpha="0.2"
+                    android:text="도어락 열기"/>
+                <Button
+                    android:id="@+id/btnCall"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:onClick="mOnClick"
+                    android:alpha="0.2"
+                    android:text="통화 시작"/>
+                <Button
+                    android:id="@+id/btnEndCall"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:onClick="mOnClick"
+                    android:alpha="0.2"
+                    android:text="통화 종료"/>
+                <Button
+                    android:id="@+id/btnConnect"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:onClick="mOnClick"
+                    android:alpha="0.2"
+                    android:text="연결"/>
+                <Button
+                    android:id="@+id/btnQuit"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:onClick="mOnClick"
+                    android:alpha="0.2"
+                    android:text="종료"/>
+            </LinearLayout>
+        </LinearLayout>
+</RelativeLayout>

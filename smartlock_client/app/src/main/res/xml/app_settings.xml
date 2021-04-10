@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <CheckBoxPreference
+        android:defaultValue="false"
+        android:key="pref_autoconnect"
+        android:title="서버 자동 연결"/>
+    <EditTextPreference
+        android:digits="0123456789."
+        android:key="pref_defaultip"
+        android:selectAllOnFocus="true"
+        android:singleLine="true"
+        android:title="서버 IP 주소"/>
+</PreferenceScreen>

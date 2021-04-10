@@ -51,16 +51,20 @@ public class MainActivity extends AppCompatActivity {
     ConnectedBluetoothThread mThreadConnectedBluetooth;
     BluetoothDevice mBluetoothDevice;
     BluetoothSocket mBluetoothSocket;
+    VoiceSend mic;
 
     final static int BT_REQUEST_ENABLE = 1;
     final static int BT_MESSAGE_READ = 2;
     final static int BT_CONNECTING_STATUS = 3;
 
-    public static final int CMD_GOBUTTON = 4;
+    public static final int CMD_FORWARDBUTTON = 4;
     public static final int CMD_BACKBUTTON = 5;
     public static final int CMD_RIGHTBUTTON = 6;
     public static final int CMD_LEFTBUTTON = 7;
     public static final int CMD_STOP = 8;
+
+    public static final int CMD_VOICESTART = 9;
+    public static final int CMD_VOICEQUIT = 10;
     final static UUID BT_UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
 
     public static final int CMD_APPEND_TEXT=0;
@@ -131,7 +135,7 @@ public class MainActivity extends AppCompatActivity {
                     mTextStatus.append((String)msg.obj);
                     break;
                  //버튼 조작시
-                case CMD_GOBUTTON:
+                case CMD_FORWARDBUTTON:
                     mThreadConnectedBluetooth.write("F");
                     break;
                 case CMD_BACKBUTTON:
@@ -145,6 +149,19 @@ public class MainActivity extends AppCompatActivity {
                     break;
                 case CMD_STOP:
                     mThreadConnectedBluetooth.write("S");
+                    break;
+                case CMD_VOICESTART:
+                    if (mic != null) {
+                        return;
+                    }
+                    mic = new VoiceSend(mServerThread.ip2);
+                    mic.start();
+                    break;
+                case CMD_VOICEQUIT:
+                    if (mic != null) {
+                        mic.interrupt();
+                        mic = null;
+                    }
                     break;
             }
         }

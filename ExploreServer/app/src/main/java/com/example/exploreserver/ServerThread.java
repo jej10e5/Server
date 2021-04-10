@@ -9,6 +9,7 @@ import android.text.TextUtils;
 import android.text.format.Formatter;
 
 import java.io.IOException;
+import java.net.DatagramSocket;
 import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
@@ -21,7 +22,7 @@ public class ServerThread extends Thread {
 
     public static android.os.Handler mMainHandler;
     private Context mContext;
-
+    public String ip2; //UDP 소켓와 연결 하기 위한 ip주소 선언
     public ServerThread(Context context, Handler mainHandler){
         mContext=context;
         mMainHandler=mainHandler;
@@ -42,17 +43,22 @@ public class ServerThread extends Thread {
                 //접속한 클라이언트 정보를 출력한다.
                 String ip=sock.getInetAddress().getHostAddress();
                 int port=sock.getPort();
+                ip2=sock.getInetAddress().getHostAddress();
                 doPrintln(">> 클라이언트 접속: "+ip+"/"+port);
                 //별도의 스레드로 클라이언트와 통신한다.
                 try{
+                    DatagramSocket datagramSocket=new DatagramSocket(50005); //UDP 포트 번호 설정
                     SendThread thread=new SendThread(sock.getOutputStream());
                     RecvThread recvthread=new RecvThread(sock.getInputStream());
+                    VoiceRecv voiceRecv=new VoiceRecv(datagramSocket);
 
                     thread.start();
                     recvthread.start();
+                    voiceRecv.start();
 
                     thread.join();
                     recvthread.join();
+                    voiceRecv.join();
 
                 }catch (Exception e){
                     doPrintln(e.getMessage());

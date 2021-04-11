@@ -41,6 +41,7 @@ public class CapturePreview  implements SurfaceHolder.Callback, Camera.PreviewCa
             Camera.Parameters params=mCamera.getParameters();
             params.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE);
             mCamera.setParameters(params);
+
             setCameraDisplayOrientation(mCamera);
             mCamera.setPreviewDisplay(holder);
             mCamera.setPreviewCallback(this);
@@ -54,6 +55,9 @@ public class CapturePreview  implements SurfaceHolder.Callback, Camera.PreviewCa
     public void surfaceChanged(@NonNull SurfaceHolder holder, int format, int width, int height) {
         try{
             mCamera.stopPreview();
+            Camera.Parameters params=mCamera.getParameters();
+            params.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE);
+            mCamera.setParameters(params);
             mCamera.setPreviewDisplay(holder);
             mCamera.setPreviewCallback(this);
             mCamera.startPreview();

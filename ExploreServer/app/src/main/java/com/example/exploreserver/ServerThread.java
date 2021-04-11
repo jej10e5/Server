@@ -22,6 +22,7 @@ public class ServerThread extends Thread {
 
     public static android.os.Handler mMainHandler;
     private Context mContext;
+
     public String ip2; //UDP 소켓와 연결 하기 위한 ip주소 선언
     public ServerThread(Context context, Handler mainHandler){
         mContext=context;
@@ -47,7 +48,7 @@ public class ServerThread extends Thread {
                 doPrintln(">> 클라이언트 접속: "+ip+"/"+port);
                 //별도의 스레드로 클라이언트와 통신한다.
                 try{
-                    DatagramSocket datagramSocket=new DatagramSocket(50005); //UDP 포트 번호 설정
+                    DatagramSocket datagramSocket=new DatagramSocket(50001); //UDP 포트 번호 설정
                     SendThread thread=new SendThread(sock.getOutputStream());
                     RecvThread recvthread=new RecvThread(sock.getInputStream());
                     VoiceRecv voiceRecv=new VoiceRecv(datagramSocket);

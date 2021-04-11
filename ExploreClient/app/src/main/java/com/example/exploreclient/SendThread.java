@@ -18,10 +18,10 @@ public class SendThread extends Thread {
     public static final int CMD_RIGHTBUTTON = 6;
     public static final int CMD_LEFTBUTTON = 7;
     public static final int CMD_STOP = 8;
-    public static final int CMD_VOICESTART=11;
-    public static final int CMD_VOICEQUIT=12;
+    public static final int CMD_VOICESTART=9;
+    public static final int CMD_VOICEQUIT=10;
 
-    public static final int HEADER_GO = 0x11111111;
+    public static final int HEADER_FORWARD = 0x11111111;
     public static final int HEADER_BACK = 0X22222222;
     public static final int HEADER_RIGHT = 0x33333333;
     public static final int HEADER_LEFT = 0X44444444;
@@ -47,7 +47,7 @@ public class SendThread extends Thread {
                     switch (msg.what) {
                         case CMD_FOWARDBUTTON:
                             String forward = (String) msg.obj;
-                            mDataOutputStream.writeInt(HEADER_GO);
+                            mDataOutputStream.writeInt(HEADER_FORWARD);
                             mDataOutputStream.writeInt(forward.length());
                             mDataOutputStream.writeUTF(forward);
                             mDataOutputStream.flush();

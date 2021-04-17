@@ -22,7 +22,8 @@ public class VoiceRecv extends Thread{
     }
 
     public void run() {
-        AudioTrack track = new AudioTrack(AudioManager.STREAM_VOICE_CALL, SAMPLE_RATE,
+        //스피커폰으로 소리를 듣기 위해 STREAM_VOICE_CALL에서 STREAM_MUSIC이라고 변경
+        AudioTrack track = new AudioTrack(AudioManager.STREAM_MUSIC, SAMPLE_RATE,
                 AudioFormat.CHANNEL_OUT_MONO, AudioFormat.ENCODING_PCM_16BIT, BUF_SIZE,
                 AudioTrack.MODE_STREAM);
         track.play();

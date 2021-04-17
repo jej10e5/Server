@@ -78,23 +78,23 @@ public class MainActivity extends AppCompatActivity {
         mBtnLeft = (Button) findViewById(R.id.btnLeft);
         mBtnStop = (Button) findViewById(R.id.btnStop);
 
-        mBtnVoiceStart=(Button)findViewById(R.id.btnVoiceStart);
-        mBtnVoiceQuit=(Button)findViewById(R.id.btnVoiceQuit);
+        mBtnVoiceStart = (Button) findViewById(R.id.btnVoiceStart);
+        mBtnVoiceQuit = (Button) findViewById(R.id.btnVoiceQuit);
 
-        mBtnSpeech=(Button)findViewById(R.id.btnSpeech);
-        textView1=(TextView)findViewById(R.id.SpeechTextView);
-        textView2=(TextView)findViewById(R.id.SpeechTextView2);
+        mBtnSpeech = (Button) findViewById(R.id.btnSpeech);
+        textView1 = (TextView) findViewById(R.id.SpeechTextView);
+        textView2 = (TextView) findViewById(R.id.SpeechTextView2);
 
-        if ( Build.VERSION.SDK_INT >= 23 ){
+        if (Build.VERSION.SDK_INT >= 23) {
             ActivityCompat.requestPermissions(this, new String[]{
-                    Manifest.permission.INTERNET, Manifest.permission.RECORD_AUDIO},PERMISSION);
+                    Manifest.permission.INTERNET, Manifest.permission.RECORD_AUDIO}, PERMISSION);
         }
 
-        intent=new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
-        intent.putExtra(RecognizerIntent.EXTRA_CALLING_PACKAGE,getPackageName());
-        intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE,"ko-KR");
+        intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
+        intent.putExtra(RecognizerIntent.EXTRA_CALLING_PACKAGE, getPackageName());
+        intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, "ko-KR");
         mBtnSpeech.setOnClickListener(v -> {
-            mRecognizer= SpeechRecognizer.createSpeechRecognizer(this);
+            mRecognizer = SpeechRecognizer.createSpeechRecognizer(this);
             mRecognizer.setRecognitionListener(listener);
             mRecognizer.startListening(intent);
         });
@@ -106,19 +106,22 @@ public class MainActivity extends AppCompatActivity {
         if (auto_connect)
             mOnClick(mBtnConnect);
 
-        (mBtnForward).setOnTouchListener(new RepeatListener(3000,1, new View.OnClickListener(){
+        //꾹 눌렀을때 같은 데이터가 나오도록 RepeatListener을 사용
+        //initialinterval은 처음 터치한 후 반복이 실행되기까지의 대기시간을 의미함
+        //normalinterval은 반복 속도를 의미
+        (mBtnForward).setOnTouchListener(new RepeatListener(3000, 1, new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 if (SendThread.mHandler != null) {
-                        Message msg = Message.obtain();
-                        msg.what = SendThread.CMD_FOWARDBUTTON;
-                        msg.obj = "F";
-                        SendThread.mHandler.sendMessage(msg);
+                    Message msg = Message.obtain();
+                    msg.what = SendThread.CMD_FOWARDBUTTON;
+                    msg.obj = "F";
+                    SendThread.mHandler.sendMessage(msg);
                 }
             }
         }));
 
-        (mBtnBackward).setOnTouchListener(new RepeatListener(3000,1, new View.OnClickListener(){
+        (mBtnBackward).setOnTouchListener(new RepeatListener(3000, 1, new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 if (SendThread.mHandler != null) {
@@ -129,7 +132,7 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         }));
-        (mBtnRight).setOnTouchListener(new RepeatListener(3000,1, new View.OnClickListener(){
+        (mBtnRight).setOnTouchListener(new RepeatListener(3000, 1, new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 if (SendThread.mHandler != null) {
@@ -140,7 +143,7 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         }));
-        (mBtnLeft).setOnTouchListener(new RepeatListener(3000,1, new View.OnClickListener(){
+        (mBtnLeft).setOnTouchListener(new RepeatListener(3000, 1, new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 if (SendThread.mHandler != null) {
@@ -157,27 +160,28 @@ public class MainActivity extends AppCompatActivity {
             public boolean onTouch(View v, MotionEvent motionEvent) {
                 if (SendThread.mHandler != null) {
                     Message msg = Message.obtain();
-                            msg.what = SendThread.CMD_STOP;
-                            msg.obj = "S";
-                            SendThread.mHandler.sendMessage(msg);
+                    msg.what = SendThread.CMD_STOP;
+                    msg.obj = "S";
+                    SendThread.mHandler.sendMessage(msg);
 
-                    }
+                }
                 return false;
             }
         });
 
     }
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.menu_main,menu);
+        getMenuInflater().inflate(R.menu.menu_main, menu);
         return super.onCreateOptionsMenu(menu);
     }
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        switch (item.getItemId()){
+        switch (item.getItemId()) {
             case R.id.item_settings:
-                Intent intent=new Intent(this,SettingsActivity.class);
+                Intent intent = new Intent(this, SettingsActivity.class);
                 startActivity(intent);
                 return true;
         }
@@ -190,8 +194,8 @@ public class MainActivity extends AppCompatActivity {
         android.os.Process.killProcess(android.os.Process.myPid());
     }
 
-    public void mOnClick(View v){
-        switch (v.getId()){
+    public void mOnClick(View v) {
+        switch (v.getId()) {
             case R.id.btnConnect:
                 if (mClientThread != null) return;
                 String addr = mEditIP.getText().toString();
@@ -204,28 +208,28 @@ public class MainActivity extends AppCompatActivity {
                 finish();
                 break;
             case R.id.btnVoiceStart:
-                if(mic != null)
+                if (mic != null)
                     break;
-                else{
-                    String address2=mEditIP.getText().toString();
-                    mic=new VoiceSend(address2);
+                else {
+                    String address2 = mEditIP.getText().toString();
+                    mic = new VoiceSend(address2);
                     mic.start();
-                    if(SendThread.mHandler!=null){
-                        Message msg=Message.obtain();
-                        msg.what=SendThread.CMD_VOICESTART;
-                        msg.obj=address2;
+                    if (SendThread.mHandler != null) {
+                        Message msg = Message.obtain();
+                        msg.what = SendThread.CMD_VOICESTART;
+                        msg.obj = address2;
                         SendThread.mHandler.sendMessage(msg);
                     }
                     mBtnVoiceStart.setEnabled(false);
                 }
                 break;
             case R.id.btnVoiceQuit:
-                if(mic != null){
+                if (mic != null) {
                     mic.interrupt();
-                    mic=null;
-                    Message msg=Message.obtain();
-                    msg.what=SendThread.CMD_VOICEQUIT;
-                    msg.obj="end";
+                    mic = null;
+                    Message msg = Message.obtain();
+                    msg.what = SendThread.CMD_VOICEQUIT;
+                    msg.obj = "end";
                     SendThread.mHandler.sendMessage(msg);
                 }
                 mBtnVoiceStart.setEnabled(true);
@@ -233,6 +237,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    //음성인식 기본form
     public RecognitionListener listener = new RecognitionListener() {
         @Override
         public void onReadyForSpeech(Bundle params) {
@@ -294,24 +299,83 @@ public class MainActivity extends AppCompatActivity {
             Toast.makeText(getApplicationContext(), "에러가 발생하였습니다. : " + message, Toast.LENGTH_SHORT).show();
         }
 
+        //음성인식 결과
         @Override
         public void onResults(Bundle results) { // 말을 하면 ArrayList에 단어를 넣고 textView에 단어를 이어줍니다.
-            String R="오른쪽";
-            String L="왼쪽";
-            String TURN="돌아";
-            String GO="가";
-            String STOP="멈춰";
+            String R = "오른쪽";
+            String L = "왼쪽";
+            String TURN = "돌아";
+            String GO = "앞";
+            String BACK = "뒤";
+            String STOP = "멈춰";
+            String DANCE = "춤";
             String speechtxt = new String();
             ArrayList<String> matches =
                     results.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
-            for(int i = 0; i < matches.size() ; i++){
+            for (int i = 0; i < matches.size(); i++) {
                 textView1.setText(matches.get(i));
             }
-            speechtxt=matches.toString();
-            if(speechtxt.contains(R)){
-                    textView2.setText("Right");
+            //문자열에 포함된 단어가 무엇인지 알아내기 위해 ArrayList로 선언된 matches를 String형으로 형변환
+            speechtxt = matches.toString();
+
+            if (speechtxt.contains(TURN)) {//도는 모션
+                if (speechtxt.contains(R)) {//String형에 원하는 문자가 포함되어있는지 확인하기 위해 contain함수 사용
+                    textView2.setText("Right Turn");
+                    if (SendThread.mHandler != null) {
+                        Message msg = Message.obtain();
+                        msg.what = SendThread.CMD_RIGHTBUTTON;
+                        msg.obj = "R";
+                        SendThread.mHandler.sendMessage(msg);
+                    }
+                } else if (speechtxt.contains(L)) {
+                    textView2.setText("Left Turn");
+                    if (SendThread.mHandler != null) {
+                        Message msg = Message.obtain();
+                        msg.what = SendThread.CMD_LEFTBUTTON;
+                        msg.obj = "L";
+                        SendThread.mHandler.sendMessage(msg);
+                    }
+                }
+            } else if (speechtxt.contains(GO)) {//앞으로
+                textView2.setText("Go");
                 if (SendThread.mHandler != null) {
-                    for(int cnt=0;cnt<45;cnt++) {
+                    for (int cnt = 0; cnt < 30; cnt++) { //조금씩 이동하도록 설정
+                        Message msg = Message.obtain();
+                        msg.what = SendThread.CMD_FOWARDBUTTON;
+                        msg.obj = "F";
+                        SendThread.mHandler.sendMessage(msg);
+                    }
+                    Message msg = Message.obtain();
+                    msg.what = SendThread.CMD_STOP;
+                    msg.obj = "S";
+                    SendThread.mHandler.sendMessage(msg);
+                }
+            } else if (speechtxt.contains(BACK)) {//뒤로
+                textView2.setText("Back");
+                if (SendThread.mHandler != null) {
+                    for (int cnt = 0; cnt < 30; cnt++) { //조금씩 이동하도록 설정
+                        Message msg = Message.obtain();
+                        msg.what = SendThread.CMD_BACKBUTTON;
+                        msg.obj = "B";
+                        SendThread.mHandler.sendMessage(msg);
+                    }
+                    Message msg = Message.obtain();
+                    msg.what = SendThread.CMD_STOP;
+                    msg.obj = "S";
+                    SendThread.mHandler.sendMessage(msg);
+                }
+            } else if (speechtxt.contains(STOP)) {
+                textView2.setText("STOP");
+                if (SendThread.mHandler != null) {
+                    Message msg = Message.obtain();
+                    msg.what = SendThread.CMD_STOP;
+                    msg.obj = "S";
+                    SendThread.mHandler.sendMessage(msg);
+                }
+            } else if (speechtxt.contains(R)) {//도는게 아니라 방향 전환만 할때
+                textView2.setText("Right");
+                if (SendThread.mHandler != null) {
+                    for (int cnt = 0; cnt < 45; cnt++) { //방향을 트는 용도로 사용하기 위해 for문으로 delay제한을 걸어둠
                         Message msg = Message.obtain();
                         msg.what = SendThread.CMD_RIGHTBUTTON;
                         msg.obj = "R";
@@ -322,11 +386,10 @@ public class MainActivity extends AppCompatActivity {
                     msg.obj = "S";
                     SendThread.mHandler.sendMessage(msg);
                 }
-            }
-            else if(speechtxt.contains(L)){
+            } else if (speechtxt.contains(L)) {//도는게 아니라 방향 전환만 할때
                 textView2.setText("Left");
                 if (SendThread.mHandler != null) {
-                    for(int cnt=0;cnt<45;cnt++) {
+                    for (int cnt = 0; cnt < 45; cnt++) {
                         Message msg = Message.obtain();
                         msg.what = SendThread.CMD_LEFTBUTTON;
                         msg.obj = "L";
@@ -338,16 +401,9 @@ public class MainActivity extends AppCompatActivity {
                     SendThread.mHandler.sendMessage(msg);
                 }
             }
-            else if(speechtxt.contains(STOP)){
-                textView2.setText("STOP");
-                if (SendThread.mHandler != null) {
-                    Message msg = Message.obtain();
-                    msg.what = SendThread.CMD_STOP;
-                    msg.obj = "S";
-                    SendThread.mHandler.sendMessage(msg);
-                }
-            }
         }
+
+
         @Override
         public void onPartialResults(Bundle partialResults) {}
         @Override

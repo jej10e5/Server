@@ -1,41 +1,25 @@
-package com.example.exploreserver;
+package com.example.server;
 
+import androidx.appcompat.app.AppCompatActivity;
+import android.os.Bundle;
+import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
-
-import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.hardware.Camera;
-import android.os.Build;
-import android.os.Bundle;
-import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
 import android.os.SystemClock;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
-import android.widget.ImageView;
-import android.widget.TextView;
 import android.widget.Toast;
-
-import org.opencv.android.CameraBridgeViewBase;
-import org.opencv.core.Core;
-import org.opencv.core.Mat;
-
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -44,7 +28,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.Semaphore;
+
 
 public class MainActivity extends AppCompatActivity {
     /*블루투스*/
@@ -76,7 +60,6 @@ public class MainActivity extends AppCompatActivity {
 
     private TextView mTextStatus;
     private CapturePreview mCapturePreview;
-    private DeviceLocation mDeviceLocation;
     private ServerThread mServerThread;
 
 
@@ -87,7 +70,6 @@ public class MainActivity extends AppCompatActivity {
 
         mTextStatus=(TextView)findViewById(R.id.textStatus);
         mCapturePreview=new CapturePreview(this,(SurfaceView)findViewById(R.id.surfPreview));
-        mDeviceLocation=new DeviceLocation(this);
 
         if(mServerThread==null) {//서버시작
             mServerThread = new ServerThread(this,mMainHandler);
@@ -111,13 +93,11 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onStart() {
         super.onStart();
-        mDeviceLocation.start();
     }
 
     @Override
     protected void onStop() {
         super.onStop();
-        mDeviceLocation.stop();
     }
 
     @Override
@@ -141,7 +121,7 @@ public class MainActivity extends AppCompatActivity {
                 case CMD_APPEND_TEXT://텍스트출력
                     mTextStatus.append((String)msg.obj);
                     break;
-                 //버튼 조작시
+                //버튼 조작시
                 case CMD_FORWARDBUTTON:
                     mThreadConnectedBluetooth.write("F");
                     break;

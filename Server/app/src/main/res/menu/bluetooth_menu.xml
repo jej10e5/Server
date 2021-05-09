@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@+id/bluetooth_On"
+        android:title="Bluetooth On"
+        app:showAsAction="never"/>
+    <item
+        android:id="@+id/bluetooth_Off"
+        android:title="Bluetooth Off"
+        app:showAsAction="never"/>
+    <item
+        android:id="@+id/bluetooth_Connect"
+        android:title="블루투스 연결하기"
+        app:showAsAction="never"/>
+</menu>

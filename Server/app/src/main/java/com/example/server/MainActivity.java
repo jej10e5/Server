@@ -1,11 +1,20 @@
 package com.example.server;
 
 import androidx.appcompat.app.AppCompatActivity;
+
+import android.content.pm.PackageManager;
+import android.content.res.AssetManager;
+import android.graphics.Bitmap;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
+import android.util.Log;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
+import androidx.core.content.ContextCompat;
+
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
@@ -20,6 +29,16 @@ import android.view.MenuItem;
 import android.view.SurfaceView;
 import android.view.View;
 import android.widget.Toast;
+
+import org.opencv.android.BaseLoaderCallback;
+import org.opencv.android.CameraBridgeViewBase;
+import org.opencv.android.LoaderCallbackInterface;
+import org.opencv.android.Utils;
+import org.opencv.core.Core;
+import org.opencv.core.Mat;
+
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -28,9 +47,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.Semaphore;
 
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements CameraBridgeViewBase.CvCameraViewListener2  {
     /*블루투스*/
     BluetoothAdapter mBluetoothAdapter;
     Set<BluetoothDevice> mPairedDevices;
@@ -59,22 +79,123 @@ public class MainActivity extends AppCompatActivity {
     public static final int CMD_APPEND_TEXT=0;
 
     private TextView mTextStatus;
-    private CapturePreview mCapturePreview;
+    private CapturePreview mCapturePreview;//삭제
     private ServerThread mServerThread;
 
+    /**/////////////////////////////////////////////////
+    int facestack = 0;//OpenCV로 부터 받아온 데이터를 사용하기위한 변수
+    private static final String TAG = "opencv";
+    private CameraBridgeViewBase mOpenCvCameraView;
+    private Mat matInput;
+    private Mat matResult;
+    boolean autoDetectionOnOff = false;
+
+    public native long loadCascade(String cascadeFileName);
+
+    public native int detect(long cascadeClassifier_face,
+                             long cascadeClassifier_eye, long matAddrInput, long matAddrResult);
+
+    public native double detect4(long cascadeClassifier_face, long cascadeClassifier_eye, long matAddrInput, long matAddrResult);
+
+    public native double detect5(long cascadeClassifier_face, long cascadeClassifier_eye, long matAddrInput, long matAddrResult);
+
+    public native double faceWidth(long cascadeClassifier_face, long cascadeClassifier_eye, long matAddrInput, long matAddrResult);
+
+    public native double faceHeight(long cascadeClassifier_face, long cascadeClassifier_eye, long matAddrInput, long matAddrResult);
+
+    public long cascadeClassifier_face = 0;
+    public long cascadeClassifier_eye = 0;
+
+    private final Semaphore writeLock = new Semaphore(2); //세마포어로 동시 실행 가능한 Thread 제어
+
+    public void getWriteLock() throws InterruptedException {
+        writeLock.acquire();
+    }
+
+    public void releaseWriteLock() {
+        writeLock.release();
+    }
+
+    static {
+        System.loadLibrary("opencv_java4");
+        System.loadLibrary("native-lib");
+    }
+
+    private void copyFile(String filename) {  //Harr cascade 트레이닝 데이터 읽어오기 위해서 안드로이드폰의 내부 저장소로 옮기는 작업
+        String baseDir = Environment.getExternalStorageDirectory().getPath();
+        String pathDir = baseDir + File.separator + filename;
+
+        AssetManager assetManager = this.getAssets();
+
+        InputStream inputStream = null;
+        OutputStream outputStream = null;
+
+        try {
+            Log.d(TAG, "copyFile :: 다음 경로로 파일복사 " + pathDir);
+            inputStream = assetManager.open(filename);
+            outputStream = new FileOutputStream(pathDir);
+
+            byte[] buffer = new byte[1024];
+            int read;
+            while ((read = inputStream.read(buffer)) != -1) {
+                outputStream.write(buffer, 0, read);
+            }
+            inputStream.close();
+            inputStream = null;
+            outputStream.flush();
+            outputStream.close();
+            outputStream = null;
+        } catch (Exception e) {
+            Log.d(TAG, "copyFile :: 파일 복사 중 예외 발생 " + e.toString());
+        }
+    }
+
+    //Harr cascade 트레이닝 데이터 읽어오기 위해서 안드로이드폰의 내부 저장소로 옮기는 작업
+    private void read_cascade_file()
+    {
+        copyFile("haarcascade_frontalface_alt.xml");
+        copyFile("haarcascade_eye_tree_eyeglasses.xml");
+
+        Log.d(TAG, "read_cascade_file:");
+
+
+        //loadCascade => 내부 저장소로부터 Harr cascade 트레이닝 데이터를 읽어와 CascadeClassifier 객체를 생성후 자바로 넘겨준다
+        cascadeClassifier_face = loadCascade("haarcascade_frontalface_alt.xml");
+        Log.d(TAG, "read_cascade_file:");
+
+        cascadeClassifier_eye = loadCascade("haarcascade_eye_tree_eyeglasses.xml");
+    }
+    /**//////////////////////////////////////////////
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_main);//activity 화면 초기화
 
         mTextStatus=(TextView)findViewById(R.id.textStatus);
-        mCapturePreview=new CapturePreview(this,(SurfaceView)findViewById(R.id.surfPreview));
+        //mCapturePreview=new CapturePreview(this,(SurfaceView)findViewById(R.id.surfPreview));
 
         if(mServerThread==null) {//서버시작
             mServerThread = new ServerThread(this,mMainHandler);
             mServerThread.start();
         }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            //퍼미션 상태 확인
+            if (!hasPermissions(PERMISSIONS)) {
+
+                //퍼미션 허가 안되어있다면 사용자에게 요청
+                requestPermissions(PERMISSIONS, PERMISSIONS_REQUEST_CODE);
+            }else read_cascade_file(); //추가
+        }else read_cascade_file(); //추가
+
+        /**///////////////
+        mOpenCvCameraView = (CameraBridgeViewBase) findViewById(R.id.surfPreview);
+        mOpenCvCameraView.setVisibility(SurfaceView.VISIBLE);
+        mOpenCvCameraView.setCvCameraViewListener(this);
+        mOpenCvCameraView.setCameraIndex(0); // front-camera(1),  back-camera(0)
+        mLoaderCallback.onManagerConnected(LoaderCallbackInterface.SUCCESS);
+        /**//////////////////////////
 
         mBluetoothHandler = new Handler() {
             public void handleMessage(android.os.Message msg) {
@@ -154,6 +275,217 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
+    /**////////////////////////////////////////////////
+    //여기서부턴 퍼미션 관련 메소드
+    static final int PERMISSIONS_REQUEST_CODE = 1000;
+    //String[] PERMISSIONS  = {"android.permission.CAMERA"};
+    String[] PERMISSIONS = {"android.permission.CAMERA",
+            "android.permission.WRITE_EXTERNAL_STORAGE"};
+    private boolean hasPermissions(String[] permissions) { //Permission 관련 코드
+        int result;
+
+        //스트링 배열에 있는 퍼미션들의 허가 상태 여부 확인
+        for (String perms : permissions) {
+
+            result = ContextCompat.checkSelfPermission(this, perms);
+
+            if (result == PackageManager.PERMISSION_DENIED) {
+                //허가 안된 퍼미션 발견
+                return false;
+            }
+        }
+        //모든 퍼미션이 허가되었음
+        return true;
+    }
+
+    private BaseLoaderCallback mLoaderCallback = new BaseLoaderCallback(this)
+    {
+        @Override
+        public void onManagerConnected(int status) {
+            switch (status) {
+                case LoaderCallbackInterface.SUCCESS: {
+                    mOpenCvCameraView.enableView();
+                }
+                break;
+                default: {
+                    super.onManagerConnected(status);
+                }
+                break;
+            }
+        }
+    };
+
+    @Override
+    public void onCameraViewStarted(int width, int height) {//Override 해야하는 메서드
+
+    }
+
+    @Override
+    public void onCameraViewStopped() {//Override 해야하는 메서드
+
+    }
+
+    @Override
+    public Mat onCameraFrame(CameraBridgeViewBase.CvCameraViewFrame inputFrame) {//매 프레임마다 동작
+        try {
+            getWriteLock();
+
+            matInput = inputFrame.rgba();
+
+            if (matResult == null)
+
+                matResult = new Mat(matInput.rows(), matInput.cols(), matInput.type());
+
+
+            Core.flip(matInput, matInput, 1);   //카메라화면 180도 뒤집기(전면, 후면 카메라 변경시 확인)
+
+            int ret = detect(cascadeClassifier_face, cascadeClassifier_eye, matInput.getNativeObjAddr(),  //검출된 얼굴 개수 대입
+                    matResult.getNativeObjAddr());
+
+            double real_facesize_x = detect4(cascadeClassifier_face, cascadeClassifier_eye, matInput.getNativeObjAddr(),
+                    matResult.getNativeObjAddr());
+
+            double real_facesize_y = detect5(cascadeClassifier_face, cascadeClassifier_eye, matInput.getNativeObjAddr(),
+                    matResult.getNativeObjAddr());
+
+            // 얼굴이 2개 이상 검출될 경우 큰 사이즈의 값을 가져와 주는 좌표 값
+            double facewidth = faceWidth(cascadeClassifier_face, cascadeClassifier_eye, matInput.getNativeObjAddr(),
+                    matResult.getNativeObjAddr());
+
+            double faceheight = faceHeight(cascadeClassifier_face, cascadeClassifier_eye, matInput.getNativeObjAddr(),
+                    matResult.getNativeObjAddr());
+
+            // 얼굴이 2개 이상 검출될 경우 큰 사이즈로 검출된 얼굴을 인식 및 자동 추적
+            if (ret >= 2 && autoDetectionOnOff) {
+                Log.d("taehyung", "face " + ret + " found");
+                Log.d("taehyung", "X좌표" + facewidth);
+                Log.d("taehyung", "Y좌표" + faceheight);
+
+                facestack++;
+                if (facestack % 100 == 50) {
+                    if (SendThread.mHandler != null) {  //SendThread에 핸들러 존재시 실행
+                        Message msg = Message.obtain();
+                        msg.what = SendThread.CMD_SEND_MESSAGE;
+                        msg.obj = "얼굴이 검출되었습니다";
+                        SendThread.mHandler.sendMessage(msg);  //작성한 메시지를 SendThread로 핸들러를 이용해 보냄
+                    }
+                }
+
+                if (faceheight >= 320) {
+                    Message msg = Message.obtain();
+                    msg.what = MainActivity.CMD_BACKBUTTON;
+                    mThreadConnectedBluetooth.write("B");
+                    ServerThread.mMainHandler.sendMessage(msg);
+                    Log.d("자동추적테스트", "아두이노 동작 확인 하");
+                } else if (faceheight <= 160) {
+                    Message msg = Message.obtain();
+                    msg.what = MainActivity.CMD_FORWARDBUTTON;
+                    mThreadConnectedBluetooth.write("F");
+                    ServerThread.mMainHandler.sendMessage(msg);
+                    Log.d("자동추적테스트", "아두이노 동작 확인 상");
+                }else{
+                    Message msg = Message.obtain();
+                    msg.what = MainActivity.CMD_STOP;
+                    mThreadConnectedBluetooth.write("S");
+                    ServerThread.mMainHandler.sendMessage(msg);
+                    Log.d("자동추적테스트", "아두이노 동작 확인 정지");
+                }
+
+                if (facewidth >= 430) {
+                    Message msg = Message.obtain();
+                    msg.what = MainActivity.CMD_RIGHTBUTTON;
+                    mThreadConnectedBluetooth.write("R");
+                    ServerThread.mMainHandler.sendMessage(msg);
+                    Log.d("자동추적테스트", "아두이노 동작 확인 좌");
+                } else if (facewidth <= 210) {
+                    Message msg = Message.obtain();
+                    msg.what = MainActivity.CMD_LEFTBUTTON;
+                    mThreadConnectedBluetooth.write("L");
+                    ServerThread.mMainHandler.sendMessage(msg);
+                    Log.d("자동추적테스트", "아두이노 동작 확인 우");
+                } else{
+                    Message msg = Message.obtain();
+                    msg.what = MainActivity.CMD_STOP;
+                    mThreadConnectedBluetooth.write("S");
+                    ServerThread.mMainHandler.sendMessage(msg);
+                    Log.d("자동추적테스트", "아두이노 동작 확인 정지");
+                }
+
+            }
+            else if (ret == 1 && autoDetectionOnOff) {   //얼굴 1개
+                Log.d("TaeHyeong1", "face " + ret + " found");
+                Log.d("Test2", "X좌표" + real_facesize_x);
+                Log.d("Test2", "Y좌표" + real_facesize_y);
+
+                facestack++;
+                if (facestack % 100 == 50) {
+                    if (SendThread.mHandler != null) {  //SendThread에 핸들러 존재시 실행
+                        Message msg = Message.obtain();
+                        msg.what = SendThread.CMD_SEND_MESSAGE;
+                        msg.obj = "얼굴이 검출되었습니다";
+                        SendThread.mHandler.sendMessage(msg);  //작성한 메시지를 SendThread로 핸들러를 이용해 보냄
+                    }
+                }
+
+                if (real_facesize_y >= 320) {
+                    Message msg = Message.obtain();
+                    msg.what = MainActivity.CMD_BACKBUTTON;
+                    mThreadConnectedBluetooth.write("B");
+                    ServerThread.mMainHandler.sendMessage(msg);
+                    Log.d("자동추적테스트", "아두이노 동작 확인 하");
+                } else if (real_facesize_y <= 160) {
+                    Message msg = Message.obtain();
+                    msg.what = MainActivity.CMD_FORWARDBUTTON;
+                    mThreadConnectedBluetooth.write("F");
+                    ServerThread.mMainHandler.sendMessage(msg);
+                    Log.d("자동추적테스트", "아두이노 동작 확인 상");
+                }else{
+                    Message msg = Message.obtain();
+                    msg.what = MainActivity.CMD_STOP;
+                    mThreadConnectedBluetooth.write("S");
+                    ServerThread.mMainHandler.sendMessage(msg);
+                    Log.d("자동추적테스트", "아두이노 동작 확인 정지");
+                }
+
+                if (real_facesize_x >= 430) {
+                    Message msg = Message.obtain();
+                    msg.what = MainActivity.CMD_RIGHTBUTTON;
+                    mThreadConnectedBluetooth.write("R");
+                    ServerThread.mMainHandler.sendMessage(msg);
+                    Log.d("자동추적테스트", "아두이노 동작 확인 좌");
+                } else if (real_facesize_x <= 210) {
+                    Message msg = Message.obtain();
+                    msg.what = MainActivity.CMD_LEFTBUTTON;
+                    mThreadConnectedBluetooth.write("L");
+                    ServerThread.mMainHandler.sendMessage(msg);
+                    Log.d("자동추적테스트", "아두이노 동작 확인 우");
+                } else{
+                    Message msg = Message.obtain();
+                    msg.what = MainActivity.CMD_STOP;
+                    mThreadConnectedBluetooth.write("S");
+                    ServerThread.mMainHandler.sendMessage(msg);
+                    Log.d("자동추적테스트", "아두이노 동작 확인 정지");
+                }
+
+            }
+
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        releaseWriteLock();
+
+        Bitmap bitmap = Bitmap.createBitmap(matResult.cols(), matResult.rows(), Bitmap.Config.ARGB_8888);
+
+        Utils.matToBitmap(matResult, bitmap);       // Mat을 Bitmap으로 변환
+
+        //이부분 고쳐야함///////////////
+        //sendBitmapThroughNetwork(bitmap);            // 네트워크로 전송 <- 기존 VideoServer에 있던 함수  핸들러로 처리함
+        //sendBitmapToViewer(bitmap);                  // ImageView에 보여줌   핸들러로 처리함
+        ///////////////////////
+        return matResult; //최종 결과를 안드로이드폰의 화면에 보여지도록 결과 Mat 객체를 리턴
+    }
+
+    /**//////////////////////////////////////////////
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater=getMenuInflater();

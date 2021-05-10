@@ -19,7 +19,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Optional;
 
-@SuppressWarnings("deprecation")
 public class CapturePreview  implements SurfaceHolder.Callback, Camera.PreviewCallback{
     private Activity mActivity;
 

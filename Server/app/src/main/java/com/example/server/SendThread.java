@@ -7,13 +7,16 @@ import android.os.Message;
 
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
+import java.io.IOException;
 import java.io.OutputStream;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 public class SendThread extends Thread {
     public static final int CMD_SEND_BITMAP = 1;
-
+    public static final int CMD_SEND_MESSAGE = 2;
     private static final int HEADER_BITMAP = 0x11111111;
-
+    private static final int HEADER_MESSAGE = 0x22222222;
     private DataOutputStream mDataOutputStream;
     public static Handler mHandler;
 
@@ -41,6 +44,25 @@ public class SendThread extends Thread {
                             mDataOutputStream.writeInt(byteArray.length);
                             mDataOutputStream.write(byteArray);
                             mDataOutputStream.flush();
+                            break;
+
+                        case CMD_SEND_MESSAGE: // 데이터 송신 메시지
+                            try {
+                                String s = (String) msg.obj;
+
+                                mDataOutputStream.writeInt(HEADER_MESSAGE);
+                                mDataOutputStream.writeInt(s.length());
+                                mDataOutputStream.writeUTF(s);
+                                //mDataOutputStream.write(s.getBytes()); 길이 없이 전송한 경우 사용
+                                mDataOutputStream.flush();
+
+                                Date today = new Date();
+                                SimpleDateFormat date = new SimpleDateFormat("yy/MM/dd");
+                                SimpleDateFormat time = new SimpleDateFormat("hh:mm:ss a");
+                                ServerThread.doPrintln("[보낸 메시지] " + s + "\n" + date.format(today) + " " + time.format(today));
+                            } catch (IOException e) {
+                                ServerThread.doPrintln(e.getMessage());
+                            }
                             break;
                     }
                 } catch (Exception e) {
